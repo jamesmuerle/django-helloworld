@@ -1,0 +1,23 @@
+from django.conf.urls import patterns, url
+
+from warmup import views
+
+urlpatterns = patterns('',
+    url(r'^$', views.index, name='index'),
+	url(r'users/login', views.login, name='login'),
+	url(r'users/add', views.welcome, name='welcome'),
+    url(r'TESTAPI/resetfixture', 'warmup.models.UsersModel.TESTAPI_resetfixture()'),
+    url(r'TESTAPI/unitTests', 'warmup.models.UsersModel.TESTAPI_unittests()'),
+    # Examples:
+    # url(r'^$', 'hellodjango.views.home', name='home'),
+    # url(r'^hellodjango/', include('hellodjango.foo.urls')),
+
+    # Uncomment the admin/doc line below to enable admin documentation:
+    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+
+    # Uncomment the next line to enable the admin:
+    # url(r'^admin/', include(admin.site.urls)),
+)
+
+urlpatterns += patterns('',
+)
