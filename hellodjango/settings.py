@@ -23,9 +23,9 @@ DATABASES = {
 
 # Uncomment if deploying to Heroku
 heroku_deploy = False
-if 'DEPLOYING_ON_HEROKU' in os.environ and os.environ['DEPLOYING_ON_HEROKU']
+if 'DEPLOYING_ON_HEROKU' in os.environ and os.environ['DEPLOYING_ON_HEROKU']:
     heroku_deploy = True
-if heroku_deploy
+if heroku_deploy:
     import dj_database_url
     DATABASES['default'] =  dj_database_url.config()
 
