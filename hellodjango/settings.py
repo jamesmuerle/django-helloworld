@@ -20,17 +20,10 @@ DATABASES = {
         'PORT': ''                      # Set to empty string for default. Not used with sqlite3.
     }
 }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': 'mydatabase'
-#     },
-#     'mioa': {
-#         '1': 'this thingy',
-#         '2': 'that thingy'
-#     }
-# }
-DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
+
+# Uncomment if deploying to Heroku
+import dj_database_url
+DATABASES['default'] =  dj_database_url.config()
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -162,7 +155,3 @@ LOGGING = {
         },
     }
 }
-
-# Uncomment if deploying to Heroku
-# import dj_database_url
-# DATABASES['default'] =  dj_database_url.config()
