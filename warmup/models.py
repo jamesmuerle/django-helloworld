@@ -1,5 +1,5 @@
 from django.db import models
-from warmup.errors import Errors
+from testLib import RestTestCase
 from django.utils import simplejson
 
 
@@ -7,30 +7,38 @@ from django.utils import simplejson
 class UsersModel(models.Model):
 
     # Database fields
-    user = models.CharField(max_length=128)
-    password = models.CharField(max_length=128)
-    count = models.IntegerField(default=1)
+    u_user = models.CharField(max_length=128)
+    u_password = models.CharField(max_length=128)
+    u_count = models.IntegerField(default=1)
 
 
     # Model actions
+    @staticmethod
     def login(user, password):
         # This function checks the user/password in the database. 
         # On success, the function updates the count of logins in the database.
         # On success the result is either the number of logins (including this one) (>= 1)
         # On failure the result is an error code (< 0) from the list below:
             # ERR_BAD_CREDENTIALS
-        data = {
-            'errCode': Errors.ERR_BAD_CREDENTIALS
-        }
-        data = {
-            'errCode': Errors.SUCCESS,
-            'count': count, # only present on success
-        }
+        results = UsersModel.objects.filter(u_user=user, u_password=password)
+        if len(results) == 1:
+            results[0].u_count = results[0].u_count + 1
+            results[0].save()
+            count = results[0].u_count
+            data = {
+                'errCode': RestTestCase.SUCCESS,
+                'count': count, # only present on success
+            }
+        else:
+            data = {
+                'errCode': RestTestCase.ERR_BAD_CREDENTIALS,
+            }
 
         json_data = simplejson.dumps(data)
-        return HttpResponse(json_data, mimetype='application/json')
+        return json_data
 
 
+    @staticmethod
     def add(user, password):
         # Checks the following:
         #  -user is not empty and not more than 128 characters long
@@ -39,30 +47,47 @@ class UsersModel(models.Model):
 
         # If all pass, new user is added to the database and count is set to 1
         # If there's a failure, the correct error code is returned.
-        pass
+        user_len = len(user)
+        pass_len = len(password)
+        if user_len <= 0 or user_len > 128:
+            data = {
+                'errCode': RestTestCase.ERR_BAD_USERNAME,
+            }
+        elif pass_len > 128:
+            data = {
+                'errCode': RestTestCase.ERR_BAD_PASSWORD,
+            }
+        elif len(UsersModel.objects.filter(u_user=user)) > 0:
+            data = {
+                'errCode': RestTestCase.ERR_USER_EXISTS,
+            }
+        else:
+            u = UsersModel(u_user=user, u_password=password)
+            u.save()
+            data = {
+                'errCode': RestTestCase.SUCCESS,
+                'count': u.u_count,
+            }
+
+        json_data = simplejson.dumps(data)
+        return json_data
+
 
     # TESTAPI methods
+    @staticmethod
     def TESTAPI_resetfixture():
         # Deletes all rows in the database.
+        for user_instance in UsersModel.objects.all():
+            user_instance.delete()
+
         data = {
-            'errCode': Errors.SUCCESS
+            'errCode': RestTestCase.SUCCESS
         }
 
         json_data = simplejson.dumps(data)
-        return HttpResponse(json_data, mimetype='application/json')
-
-
-    def TESTAPI_unittests():
-        data = {
-            'totalTests': 1,
-            'nrFailed': 1,
-            'output': 'text',
-        }
-
-        json_data = simplejson.dumps(data)
-        return HttpResponse(json_data, mimetype='application/json')
+        return json_data
 
 
     # For debugging ease
-    def __unicode__():
-        return user + ' ' + password
+    def __unicode__(self):
+        return 'USERNAME:' + self.u_user + ', PASSWORD:' + self.u_password + ', COUNT:' + str(self.u_count)

@@ -4,10 +4,10 @@ from warmup import views
 
 urlpatterns = patterns('',
     url(r'^$', views.index, name='index'),
-	url(r'users/login', views.login, name='login'),
-	url(r'users/add', views.welcome, name='welcome'),
-    url(r'TESTAPI/resetfixture', 'warmup.models.UsersModel.TESTAPI_resetfixture()'),
-    url(r'TESTAPI/unitTests', 'warmup.models.UsersModel.TESTAPI_unittests()'),
+    url(r'users/login', views.login, name='login'),
+    url(r'users/add', views.add, name='welcome'),
+    url(r'TESTAPI/resetFixture', views.TESTAPI_resetfixture),
+    url(r'TESTAPI/unitTests', views.TESTAPI_unittests),
     # Examples:
     # url(r'^$', 'hellodjango.views.home', name='home'),
     # url(r'^hellodjango/', include('hellodjango.foo.urls')),
