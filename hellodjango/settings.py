@@ -22,8 +22,12 @@ DATABASES = {
 }
 
 # Uncomment if deploying to Heroku
-import dj_database_url
-DATABASES['default'] =  dj_database_url.config()
+heroku_deploy = False
+if 'DEPLOYING_ON_HEROKU' in os.environ and os.environ['DEPLOYING_ON_HEROKU']
+    heroku_deploy = True
+if heroku_deploy
+    import dj_database_url
+    DATABASES['default'] =  dj_database_url.config()
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
