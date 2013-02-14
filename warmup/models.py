@@ -1,7 +1,11 @@
 from django.db import models
-from testLib import RestTestCase
 from django.utils import simplejson
 
+SUCCESS =              1     # : a success
+ERR_BAD_CREDENTIALS = -1     # : (for login only) cannot find the user/password pair in the database
+ERR_USER_EXISTS     = -2     #: (for add only) trying to add a user that already exists
+ERR_BAD_USERNAME    = -3     #: (for add, or login) invalid user name (only empty string is invalid for now)
+ERR_BAD_PASSWORD    = -4
 
 # Create your models here.
 class UsersModel(models.Model):
@@ -26,12 +30,12 @@ class UsersModel(models.Model):
             results[0].save()
             count = results[0].u_count
             data = {
-                'errCode': RestTestCase.SUCCESS,
+                'errCode': SUCCESS,
                 'count': count, # only present on success
             }
         else:
             data = {
-                'errCode': RestTestCase.ERR_BAD_CREDENTIALS,
+                'errCode': ERR_BAD_CREDENTIALS,
             }
 
         json_data = simplejson.dumps(data)
@@ -51,21 +55,21 @@ class UsersModel(models.Model):
         pass_len = len(password)
         if user_len <= 0 or user_len > 128:
             data = {
-                'errCode': RestTestCase.ERR_BAD_USERNAME,
+                'errCode': ERR_BAD_USERNAME,
             }
         elif pass_len > 128:
             data = {
-                'errCode': RestTestCase.ERR_BAD_PASSWORD,
+                'errCode': ERR_BAD_PASSWORD,
             }
         elif len(UsersModel.objects.filter(u_user=user)) > 0:
             data = {
-                'errCode': RestTestCase.ERR_USER_EXISTS,
+                'errCode': ERR_USER_EXISTS,
             }
         else:
             u = UsersModel(u_user=user, u_password=password)
             u.save()
             data = {
-                'errCode': RestTestCase.SUCCESS,
+                'errCode': SUCCESS,
                 'count': u.u_count,
             }
 
@@ -81,7 +85,7 @@ class UsersModel(models.Model):
             user_instance.delete()
 
         data = {
-            'errCode': RestTestCase.SUCCESS
+            'errCode': SUCCESS
         }
 
         json_data = simplejson.dumps(data)

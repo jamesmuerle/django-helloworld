@@ -139,23 +139,80 @@ INSTALLED_APPS = (
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+    'formatters': {
+        'verbose': {
+            'format': '[%(asctime)s] %(levelname)s: %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'full': {
+            'format': '[%(asctime)s] %(levelname)s: %(module)s %(message)s'
+        },
+        'simple': {
+            'format': '[%(asctime)s] %(levelname)s: %(message)s'
+        },
     },
     'handlers': {
+        'null': {
+            'level':'DEBUG', # Drop all logs
+            'class':'django.utils.log.NullHandler',
+        },
         'mail_admins': {
             'level': 'ERROR',
-            'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'console_debug': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter' : 'verbose'
+        },
+        'console_error': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter' : 'full'
+        },
     },
     'loggers': {
         'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
+        'handlers': [ 'console_debug' ],
+        'level' : 'DEBUG',
+        'propagate': True,
         },
+        # Logging of database queries
+        'django.db.backends': {
+        'level': 'DEBUG', # All DB requests
+        'handlers': ['console_debug' ],
+        'formatter' : 'simple',
+        'propagate' : False
+        },
+        'django': {
+        'handlers':[ 'console_debug' ],
+        'propagate': True,
+        'level':'DEBUG',
+        'formatter' :'simple'
+        }
     }
 }
+
+# Default logging configuration
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'filters': {
+#         'require_debug_false': {
+#             '()': 'django.utils.log.RequireDebugFalse'
+#         }
+#     },
+#     'handlers': {
+#         'mail_admins': {
+#             'level': 'ERROR',
+#             'filters': ['require_debug_false'],
+#             'class': 'django.utils.log.AdminEmailHandler'
+#         }
+#     },
+#     'loggers': {
+#         'django.request': {
+#             'handlers': ['mail_admins'],
+#             'level': 'ERROR',
+#             'propagate': True,
+#         },
+#     }
+# }
