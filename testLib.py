@@ -26,7 +26,7 @@ class RestTestCase(unittest.TestCase):
         serverToTest = os.environ["TEST_SERVER"]
 
     def makeRequest(self, url, method="GET", data=None):
-        """
+        """getresponse
         Make a request to the server.
         @param url is the relative url (no hostname)
         @param method is either "GET" or "POST"
@@ -48,6 +48,8 @@ class RestTestCase(unittest.TestCase):
                 sys.exit(1)
             raise
 
+        import socket
+        socket.setdefaulttimeout(100.0)
         self.conn.sock.settimeout(100.0) # Give time to the remote server to start and respond
         resp = self.conn.getresponse()
         data_string = "<unknown"
