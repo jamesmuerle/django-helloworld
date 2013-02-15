@@ -2,7 +2,7 @@ import unittest
 import testLib
 # from testAdditional import TestResponse
 import os
-os.environ["DJANGO_SETTINGS_MODULE"] = "/hellodjango/settings"
+os.environ["DJANGO_SETTINGS_MODULE"] = "hellodjango.settings"
 from warmup.models import UsersModel
 import json
 
@@ -149,6 +149,11 @@ class TestUsersModel(TestResponse):
     # Unit test that tests the resetFixture function in UsersModel
     def testResetFixture(self):
         UsersModel.TESTAPI_resetfixture()
+        UsersModel.add('james', 'muerle')
+        self.assertEqual(len(UsersModel.objects.all()), 1)
+        UsersModel.TESTAPI_resetfixture()
+        self.assertEqual(len(UsersModel.objects.all()), 0)
+
         # respData = self.makeRequest("/TESTAPI/resetFixture", method="POST")
         # respData = self.makeRequest("/users/add", method="POST", data = {'user': 'james', 'password': 'muerle'})
         # self.assertResponse(respData)
