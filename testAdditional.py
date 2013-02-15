@@ -13,9 +13,9 @@ class TestResponse(testLib.RestTestCase):
         self.assertDictEqual(expected, respData)
 
 
+# Class that tests normal usage of add, login, and resetFixture
 class TestUsage(TestResponse):
     def testSimpleUsage(self):
-        # clear and check database size
         self.makeRequest("/TESTAPI/resetFixture", method="POST")
 
         # add james and check success
@@ -35,7 +35,6 @@ class TestUsage(TestResponse):
         self.assertResponse(respData, count = 2)
 
     def testDDOS(self):
-        # clear and check database size
         self.makeRequest("/TESTAPI/resetFixture", method="POST")
 
         # make a bunch of users and check database size
@@ -55,8 +54,90 @@ class TestUsage(TestResponse):
                 self.assertResponse(respData, count = login_times[i] + 3)
 
 
+    def testLoginSequenceMixed(self):
+        self.makeRequest("/TESTAPI/resetFixture", method="POST")
+
+        # add and login james muerle
+        respData = self.makeRequest("/users/add", method="POST", data = {'user': 'james', 'password': 'muerle'})
+        self.assertResponse(respData)
+        respData = self.makeRequest("/users/login", method="POST", data = {'user': 'james', 'password': 'muerle'})
+        self.assertResponse(respData, count = 2)
+
+        # add and login andrew finch
+        respData = self.makeRequest("/users/add", method="POST", data = {'user': 'andrew', 'password': 'finch'})
+        self.assertResponse(respData)
+        respData = self.makeRequest("/users/login", method="POST", data = {'user': 'andrew', 'password': 'finch'})
+        self.assertResponse(respData, count = 2)
+
+        # add and login kevin fang
+        respData = self.makeRequest("/users/add", method="POST", data = {'user': 'kevin', 'password': 'fang'})
+        self.assertResponse(respData)
+        respData = self.makeRequest("/users/login", method="POST", data = {'user': 'kevin', 'password': 'fang'})
+        self.assertResponse(respData, count = 2)
+
+        # Change the order a little bit
+        respData = self.makeRequest("/users/login", method="POST", data = {'user': 'james', 'password': 'muerle'})
+        self.assertResponse(respData, count = 3)
+        respData = self.makeRequest("/users/login", method="POST", data = {'user': 'kevin', 'password': 'fang'})
+        self.assertResponse(respData, count = 3)
+        respData = self.makeRequest("/users/login", method="POST", data = {'user': 'andrew', 'password': 'finch'})
+        self.assertResponse(respData, count = 3)
+
+    def testResetFixture(self):
+        self.makeRequest("/TESTAPI/resetFixture", method="POST")
+
+        # create user
+        respData = self.makeRequest("/users/add", method="POST", data = {'user': 'james', 'password': 'muerle'})
+        self.assertResponse(respData)
+
+        # clear database
+        self.makeRequest("/TESTAPI/resetFixture", method="POST")
+
+        # try to login and get bad credentials
+        respData = self.makeRequest("/users/login", method="POST", data = {'user': 'james', 'password': 'muerle'})
+        self.assertResponse(respData, count = None, errCode = RestTestCase.ERR_BAD_CREDENTIALS)
+
+
+# Class for testing that making requests returns errors successfully.
 class TestError(TestResponse):
+    # Test errors that could happen when trying to log in.
     def testLoginError(self):
-        pass
+        self.makeRequest("/TESTAPI/resetFixture", method="POST")
+
+        # login without adding is ERR_BAD_CREDENTIALS
+        respData = self.makeRequest("/users/login", method="POST", data = {'user': 'james', 'password': 'muerle'})
+        self.assertResponse(respData, count = None, errCode = RestTestCase.ERR_BAD_CREDENTIALS)
+
+        # login after adding is successful
+        self.makeRequest("/users/add", method="POST", data = {'user': 'james', 'password': 'muerle'})
+        respData = self.makeRequest("/users/login", method="POST", data = {'user': 'james', 'password': 'muerle'})
+        self.assertResponse(respData, count = 2)
+
+    def testAddError(self):
+        self.makeRequest("/TESTAPI/resetFixture", method="POST")
+
+        # Check long password error
+        respData = self.makeRequest("/users/add", method="POST", data = {'user': 'james', 'password': 'somereallylongpasswordthatinfringesourrequirementthatpasswordsbeonly128asciicharacterslongandidontknowhowtofilltherestofthispasswordup'})
+        self.assertResponse(respData, count = None, errCode = RestTestCase.ERR_BAD_PASSWORD)
+
+        # Make sure blank password is ok
+        respData = self.makeRequest("/users/add", method="POST", data = {'user': 'james_blank_pw', 'password': ''})
+        self.assertResponse(respData)
+
+        # Adding same user is ERR_USER_EXISTS
+        respData = self.makeRequest("/users/add", method="POST", data = {'user': 'james_blank_pw', 'password': 'muerle'})
+        self.assertResponse(respData, count = None, errCode = RestTestCase.ERR_USER_EXISTS)
+
+        # Check long username error
+        respData = self.makeRequest("/users/add", method="POST", data = {'user': 'somereallylongusernamethatinfringesourrequirementthatusernamesbeonly128characterslongatmaximumineed30moreasciicharacterbutthisisalligot', 'password': 'muerle'})
+        self.assertResponse(respData, count = None, errCode = RestTestCase.ERR_BAD_USERNAME)
+
+        # Check empty username error
+        respData = self.makeRequest("/users/add", method="POST", data = {'user': '', 'password': 'muerle'})
+        self.assertResponse(respData, count = None, errCode = RestTestCase.ERR_BAD_USERNAME)
+
+
+
+
 
 
