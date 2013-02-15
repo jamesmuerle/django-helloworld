@@ -48,7 +48,7 @@ class RestTestCase(unittest.TestCase):
                 sys.exit(1)
             raise
 
-        self.conn.sock.settimeout(1000.0) # Give time to the remote server to start and respond
+        self.conn.sock.settimeout(100.0) # Give time to the remote server to start and respond
         resp = self.conn.getresponse()
         data_string = "<unknown"
         try:
